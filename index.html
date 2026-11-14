@@ -23,12 +23,12 @@ body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-
 button,input,select,textarea{font:inherit}
 button,[role=button]{min-height:40px}
 a{color:var(--accent)}
-.top{max-width:1280px;margin:0 auto;padding:28px 20px 10px}
+.top{max-width:880px;margin:0 auto;padding:26px 20px 4px}
 .eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
-h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(36px,6vw,62px);line-height:.95;margin:8px 0 10px;letter-spacing:-.02em}
+h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(32px,5vw,44px);line-height:1;margin:6px 0 8px;letter-spacing:-.02em}
 h1 em{color:var(--accent)}
-.lede{max-width:680px;color:var(--muted);font-size:17px;margin:0}
-.projectbar{max-width:1280px;margin:18px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.lede{max-width:640px;color:var(--muted);font-size:16px;margin:0}
+.projectbar{max-width:880px;margin:16px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .projectbar label{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 #fontName{flex:1 1 220px;background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:11px 16px;color:var(--ink);font-weight:700;font-size:17px}
 .progresswrap{flex:1 1 180px;min-width:160px}
@@ -42,15 +42,15 @@ h1 em{color:var(--accent)}
 .btn.small{padding:8px 12px;font-size:14px;min-height:38px}
 .btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
-.layout{max-width:1280px;margin:18px auto 0;padding:0 20px 28px;display:grid;grid-template-columns:248px minmax(0,1fr) 320px;gap:16px;align-items:start}
+.layout{max-width:880px;margin:16px auto 0;padding:0 20px 24px;display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
 .panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
 .panel-h{padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
 .panel-h strong{font-size:13px;letter-spacing:.1em;text-transform:uppercase}
 .panel-h span{font-size:13px;color:var(--muted)}
-.glyphgrid{padding:12px;max-height:640px;overflow:auto}
+.glyphgrid{padding:12px;max-height:300px;overflow:auto}
 .gsection{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 2px 8px;font-weight:700}
 .gsection:first-child{margin-top:0}
-.grow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.grow{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px}
 .glyph{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font-family:"Newsreader",serif;font-size:20px;cursor:pointer;position:relative;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;min-height:42px}
 .glyph.done{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%, var(--paper))}
 .glyph.done::after{content:"";position:absolute;right:6px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--accent2)}
@@ -67,7 +67,7 @@ h1 em{color:var(--accent)}
 .brush{border:0;background:transparent;border-radius:999px;min-width:40px;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center}
 .brush.active{background:var(--paper);box-shadow:0 1px 6px rgba(0,0,0,.12)}
 .dot{display:block;border-radius:50%;background:currentColor}
-.stage{position:relative;background:var(--canvas);border:1px solid var(--line2);border-radius:14px;overflow:hidden;aspect-ratio:600/680}
+.stage{position:relative;background:var(--canvas);border:1px solid var(--line2);border-radius:14px;overflow:hidden;aspect-ratio:600/680;max-width:540px;margin:0 auto}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #inkCanvas{touch-action:none;cursor:crosshair}
 #ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Newsreader",serif;font-size:min(62vw,430px);line-height:1;color:var(--ghost);opacity:.07;pointer-events:none;transform:translateY(-4%)}
@@ -76,7 +76,7 @@ h1 em{color:var(--accent)}
 .checks input{width:20px;height:20px;accent-color:var(--accent)}
 .boardfoot{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .hint{font-size:13px;color:var(--muted);margin:10px 0 0}
-.side{display:grid;gap:16px}
+.side{display:grid;gap:16px;grid-template-columns:1fr 1fr;align-items:start}
 .previewbox{padding:16px}
 #testText{width:100%;border:1px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:10px;padding:11px 12px}
 #previewText{font-family:"MyHandPreview", "Newsreader", serif;font-size:42px;line-height:1.15;margin:16px 0 6px;word-break:break-word;min-height:96px}
@@ -88,12 +88,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .status{font-size:13px;border-radius:10px;padding:10px 12px;background:var(--paper2);color:var(--muted);margin-top:10px;display:none}
 .status.show{display:block}
 .status.ok{color:var(--accent2)} .status.err{color:var(--accent)}
-.how{max-width:1280px;margin:0 auto;padding:0 20px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.how article{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
-.how h3{margin:0 0 6px;font-family:"DM Serif Display",serif;font-weight:400;font-size:21px}
-.how p{margin:0;color:var(--muted);font-size:14px}
-.how .num{font-size:12px;letter-spacing:.14em;color:var(--accent);font-weight:700}
-footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font-size:13px;text-align:center}
 .modal-overlay{position:fixed;inset:0;background:rgba(20,16,10,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
 .modal-overlay.open{display:flex}
 .modal{background:var(--paper);color:var(--ink);border:1px solid var(--line2);border-radius:18px;box-shadow:var(--shadow);width:100%;max-width:480px;max-height:calc(100vh - 36px);overflow:auto;padding:22px}
@@ -107,15 +102,14 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);fon
 .projects{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
 .proj{font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--paper);cursor:pointer}
 .proj.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
-@media(max-width:1020px){.layout{grid-template-columns:200px minmax(0,1fr)}.side{grid-column:1/-1;grid-template-columns:1fr 1fr}.how{grid-template-columns:1fr 1fr}}
-@media(max-width:680px){.layout{grid-template-columns:1fr}.glyphgrid{max-height:260px}.side{grid-template-columns:1fr}.how{grid-template-columns:1fr}.top{padding-top:20px}#ghost{font-size:340px}}
+@media(max-width:680px){.glyphgrid{max-height:260px}.side{grid-template-columns:1fr}.top{padding-top:20px}#ghost{font-size:340px}}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="eyebrow">Hand-lettering studio</div>
-  <h1>Draw it. <em>Install it.</em><br>Your own font.</h1>
-  <p class="lede">Draw every letter freehand on the guided board. FontMaker turns your strokes into real outlines and exports a genuine <strong>.TTF</strong> you can install on your phone or computer — plus an SVG font.</p>
+  <h1>Draw it. <em>Install it.</em> Your own font.</h1>
+  <p class="lede">Pick a letter, draw it on the board, and export a real <strong>.TTF</strong> font made from your own handwriting.</p>
 </header>
 
 <div class="projectbar">
@@ -132,7 +126,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);fon
     <input id="loadJson" type="file" accept=".json,application/json" hidden>
   </div>
 </div>
-<div style="max-width:1280px;margin:8px auto 0;padding:0 20px"><div class="projects" id="projectTabs" style="padding:0"></div></div>
+<div style="max-width:880px;margin:8px auto 0;padding:0 20px"><div class="projects" id="projectTabs" style="padding:0"></div></div>
 
 <main class="layout">
   <!-- Glyph picker -->
@@ -174,7 +168,7 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);fon
       <button class="btn small" id="clearBtn">Clear this letter</button>
       <button class="btn small" id="sampleBtn">Try a sample “Aa”</button>
     </div>
-    <p class="hint">Guides: top line is cap height, dotted line is x-height (lowercase body), thick line is the baseline your letters sit on, bottom area is for tails like <em>g, j, p, q, y</em>. Draw with mouse, finger or stylus.</p>
+    <p class="hint">Letters sit on the thick baseline; the bottom area is for tails like <em>g, j, p, q, y</em>. Draw with mouse, finger or stylus.</p>
   </section>
 
   <!-- Preview + export -->
@@ -191,23 +185,17 @@ footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);fon
 
     <section class="panel exportbox">
       <strong style="font-size:13px;letter-spacing:.1em;text-transform:uppercase">Export your font</strong>
-      <p>A real font file, made only from the letters you've drawn. Undrawn letters are left blank — draw at least A–Z to use it for everyday typing. Each time you export a .TTF, you'll be asked for its name, style, version, designer and manufacturer, and those details are written into the font file.</p>
+      <p>Made only from the letters you've drawn — undrawn letters stay blank, so draw at least A–Z for everyday typing. Each .TTF export asks for the font's name, style, version, designer and manufacturer.</p>
       <button class="btn accent" id="exportTtf">↓ Download .TTF font</button>
       <button class="btn" id="exportSvg">↓ Download SVG font</button>
       <button class="btn" id="rebuildBtn">↻ Rebuild preview font</button>
       <div class="status" id="statusBox"></div>
-      <p style="margin-top:12px"><strong style="color:var(--ink)">Install it:</strong> Windows — double-click the .TTF → Install. Mac — open in Font Book → Install. Android — use a font installer / zFont with the .TTF. iPhone — install via iFont or AnyFont, then pick it in apps that support custom fonts.</p>
+      <p style="margin-top:12px"><strong style="color:var(--ink)">Install it:</strong> double-click the .TTF on Windows or Mac, or use a font installer app (zFont, iFont) on your phone.</p>
     </section>
   </aside>
 </main>
 
-<section class="how">
-  <article><div class="num">01 — DRAW</div><h3>One letter at a time</h3><p>Pick a letter on the left, trace over the faint ghost or go freehand. Pen, eraser, three brush sizes, undo and redo are all on the board.</p></article>
-  <article><div class="num">02 — PREVIEW</div><h3>See it as a font</h3><p>As you draw, FontMaker rebuilds a working TTF in your browser and types your test sentence in it, so you can spot letters that need a fix.</p></article>
-  <article><div class="num">03 — EXPORT</div><h3>Take the file</h3><p>Download the .TTF and install it anywhere. Save a project file too — open it here later to keep editing the same font, or start a second font alongside it.</p></article>
-</section>
-
-<footer><span>FontMaker — drawings stay in this tab until you download them. Save a project file to keep your work.</span><span>Made for hand-drawn type.</span></footer>
+<footer>Drawings stay in this tab until you download them — save a project file to keep your work.</footer>
 
 <div class="modal-overlay" id="metaModal" role="dialog" aria-modal="true" aria-labelledby="metaTitle">
   <div class="modal">
