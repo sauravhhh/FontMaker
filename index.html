@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <title>FontMaker — Draw letters, export a real font</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,1,400&family=Noto+Serif+Bengali:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
 <style>
 :root{
@@ -23,15 +23,13 @@ body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-
 button,input,select,textarea{font:inherit}
 button,[role=button]{min-height:40px}
 a{color:var(--accent)}
-.top{max-width:880px;margin:0 auto;padding:26px 20px 4px}
-.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
-h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(32px,5vw,44px);line-height:1;margin:6px 0 8px;letter-spacing:-.02em}
-h1 em{color:var(--accent)}
-.lede{max-width:640px;color:var(--muted);font-size:16px;margin:0}
-.projectbar{max-width:880px;margin:16px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
-.projectbar label{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-#fontName{flex:1 1 220px;background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:11px 16px;color:var(--ink);font-weight:700;font-size:17px}
-.progresswrap{flex:1 1 180px;min-width:160px}
+.top{max-width:880px;margin:0 auto;padding:22px 20px 0}
+.intro{font-size:17px;margin:0;max-width:640px}
+.projectbar{max-width:880px;margin:14px auto 0;padding:0 20px;display:flex;flex-direction:column;gap:10px}
+.namerow{display:flex;gap:10px;align-items:center}
+.projectbar label{font-size:14px;font-weight:700;color:var(--muted);white-space:nowrap}
+#fontName{flex:1;min-width:0;background:var(--paper);border:1px solid var(--line2);border-radius:10px;padding:10px 14px;color:var(--ink);font-weight:700;font-size:16px}
+.progresswrap{min-width:0}
 .progressmeta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
 .progress{height:8px;background:var(--paper2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
 .progress i{display:block;height:100%;background:var(--accent);width:0%;transition:width .3s}
@@ -51,7 +49,7 @@ h1 em{color:var(--accent)}
 .gsection{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 2px 8px;font-weight:700}
 .gsection:first-child{margin-top:0}
 .grow{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px}
-.glyph{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font-family:"Newsreader",serif;font-size:20px;cursor:pointer;position:relative;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;min-height:42px}
+.glyph{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font-family:"Newsreader","Noto Serif Bengali",serif;font-size:20px;cursor:pointer;position:relative;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;min-height:42px}
 .glyph.done{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%, var(--paper))}
 .glyph.done::after{content:"";position:absolute;right:6px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--accent2)}
 .glyph.current{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);font-weight:700}
@@ -63,6 +61,7 @@ h1 em{color:var(--accent)}
 .tools{display:flex;flex-wrap:wrap;gap:6px}
 .tool{width:44px;height:44px;border-radius:999px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink)}
 .tool.active{background:var(--ink);color:var(--bg)}
+.tool.labeled{width:auto;padding:0 16px;font-size:14px;font-weight:700;gap:6px}
 .brushes{display:flex;gap:6px;align-items:center;background:var(--paper2);border-radius:999px;padding:4px}
 .brush{border:0;background:transparent;border-radius:999px;min-width:40px;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center}
 .brush.active{background:var(--paper);box-shadow:0 1px 6px rgba(0,0,0,.12)}
@@ -70,7 +69,7 @@ h1 em{color:var(--accent)}
 .stage{position:relative;background:var(--canvas);border:1px solid var(--line2);border-radius:14px;overflow:hidden;aspect-ratio:600/680;max-width:540px;margin:0 auto}
 .stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 #inkCanvas{touch-action:none;cursor:crosshair}
-#ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Newsreader",serif;font-size:min(62vw,430px);line-height:1;color:var(--ghost);opacity:.07;pointer-events:none;transform:translateY(-4%)}
+#ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Newsreader","Noto Serif Bengali",serif;font-size:min(62vw,430px);line-height:1;color:var(--ghost);opacity:.07;pointer-events:none;transform:translateY(-4%)}
 .checks{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px}
 .checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer;font-size:14px;color:var(--muted)}
 .checks input{width:20px;height:20px;accent-color:var(--accent)}
@@ -109,16 +108,16 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 </head>
 <body>
 <header class="top">
-  <div class="eyebrow">Hand-lettering studio</div>
-  <h1>Draw it. <em>Install it.</em> Your own font.</h1>
-  <p class="lede">Pick a letter, draw it on the board, and export a real <strong>.TTF</strong> font made from your own handwriting.</p>
+  <p class="intro">Pick a letter, draw it on the board, and export a real <strong>.TTF</strong> font made from your own handwriting.</p>
 </header>
 
 <div class="projectbar">
-  <label for="fontName">Font name</label>
-  <input id="fontName" value="My Handwriting" maxlength="40" autocomplete="off">
+  <div class="namerow">
+    <label for="fontName">Font name</label>
+    <input id="fontName" value="My Handwriting" maxlength="40" autocomplete="off">
+  </div>
   <div class="progresswrap">
-    <div class="progressmeta"><span id="progressLabel">0 of 75 drawn</span><span>Start with A, B, C</span></div>
+    <div class="progressmeta"><span id="progressLabel">0 drawn</span><span>Start with A, B, C</span></div>
     <div class="progress"><i id="progressBar"></i></div>
   </div>
   <div class="actions">
@@ -128,7 +127,7 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
     <input id="loadJson" type="file" accept=".json,application/json" hidden>
   </div>
 </div>
-<div style="max-width:880px;margin:8px auto 0;padding:0 20px"><div class="projects" id="projectTabs" style="padding:0"></div></div>
+<div id="projectTabsWrap" style="max-width:880px;margin:8px auto 0;padding:0 20px;display:none"><div class="projects" id="projectTabs" style="padding:0"></div></div>
 
 <main class="layout">
   <!-- Glyph picker -->
@@ -142,8 +141,8 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
     <div class="boardhead">
       <div class="currentchar"><b id="curCharLabel">A</b><span id="curCharMeta">Uppercase · draw inside the guides</span></div>
       <div class="tools" role="toolbar" aria-label="Drawing tools">
-        <button class="tool active" id="penBtn" title="Pen" aria-label="Pen">✎</button>
-        <button class="tool" id="eraserBtn" title="Eraser" aria-label="Eraser">⌫</button>
+        <button class="tool labeled active" id="penBtn" title="Pen" aria-label="Pen">✎ Pen</button>
+        <button class="tool labeled" id="eraserBtn" title="Eraser — drag over ink to rub it out" aria-label="Eraser">Eraser</button>
         <div class="brushes" aria-label="Brush size">
           <button class="brush" data-size="7" aria-label="Thin brush"><span class="dot" style="width:7px;height:7px"></span></button>
           <button class="brush active" data-size="14" aria-label="Medium brush"><span class="dot" style="width:13px;height:13px"></span></button>
@@ -180,6 +179,10 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
       <div id="previewText">The quick brown fox jumps over the lazy dog</div>
       <label style="font-size:13px;color:var(--muted)">Test text</label>
       <input id="testText" value="The quick brown fox jumps over the lazy dog">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+        <button class="btn small" id="sampleEn" type="button">English sample</button>
+        <button class="btn small" id="sampleAs" type="button">অসমীয়া sample</button>
+      </div>
       <label style="font-size:13px;color:var(--muted);display:block;margin-top:12px">Size <span id="sizeLabel">42px</span></label>
       <input type="range" id="sizeRange" min="22" max="84" value="42">
       <p class="previewnote">This preview is rendered from the actual TTF built from your strokes — letters you haven't drawn yet fall back to a serif.</p>
@@ -187,7 +190,7 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 
     <section class="panel exportbox">
       <strong style="font-size:13px;letter-spacing:.1em;text-transform:uppercase">Export your font</strong>
-      <p>Made only from the letters you've drawn — undrawn letters stay blank, so draw at least A–Z for everyday typing. Each .TTF export asks for the font's name, style and version, plus optional copyright, description, designer and manufacturer.</p>
+      <p>Made only from the letters you've drawn — undrawn letters stay blank, so draw at least A–Z for everyday typing. Assamese letters and matras export at their real Unicode points, so they type as normal অসমীয়া text — draw the ্ (hasanta) too, so joined letters like ক্ষ can be formed. Each .TTF export asks for the font's name, style and version, plus optional copyright, description, designer and manufacturer.</p>
       <button class="btn accent" id="exportTtf">↓ Download .TTF font</button>
       <button class="btn" id="exportSvg">↓ Download SVG font</button>
       <button class="btn" id="rebuildBtn">↻ Rebuild preview font</button>
@@ -231,11 +234,17 @@ var SETS=[
  {label:"Uppercase A–Z", chars:"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), meta:"Uppercase"},
  {label:"Lowercase a–z", chars:"abcdefghijklmnopqrstuvwxyz".split(""), meta:"Lowercase"},
  {label:"Numbers 0–9", chars:"0123456789".split(""), meta:"Number"},
- {label:"Symbols", chars:["."," ,","!","?",";",":","'","-","(",")","@","#","&","*","+","="].map(function(s){return s.trim()}), meta:"Symbol"}
+ {label:"Symbols", chars:["."," ,","!","?",";",":","'","-","(",")","@","#","&","*","+","="].map(function(s){return s.trim()}), meta:"Symbol"},
+ {label:"Assamese · স্বৰবৰ্ণ — Vowels", chars:"অআইঈউঊঋএঐওঔ".split(""), meta:"Assamese vowel"},
+ {label:"Assamese · ব্যঞ্জনবৰ্ণ — Consonants", chars:"কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযৰলৱশষসহ".split(""), meta:"Assamese consonant"},
+ {label:"Assamese · Extra letters", chars:["\u09DC","\u09DD","\u09DF","\u09CE"], meta:"Assamese letter"},
+ {label:"Assamese · মাত্ৰা — Matra & signs", chars:"ািীুূৃেৈোৌ্ংঃঁ".split(""), meta:"Assamese matra"},
+ {label:"Assamese · সংখ্যা — Numbers", chars:"০১২৩৪৫৬৭৮৯".split(""), meta:"Assamese digit"}
 ];
 // fix symbols list explicitly
 SETS[3].chars=[".",",","!","?",";",":","'","\"","-","(",")","@","#","&","*","+","=","/"];
 var ALL=[]; SETS.forEach(function(s){s.chars.forEach(function(c){ALL.push({ch:c,meta:s.meta})})});
+var ZERO_ADV={}; ["ু","ূ","ৃ","্","ং","ঃ","ঁ"].forEach(function(c){ZERO_ADV[c]=true});
 var BASELINE=520, W=600, H=680, SCALE=1.35;
 
 var projects=[], activeProject=0, uid=1;
@@ -275,6 +284,7 @@ function refreshGrid(){
 }
 function buildProjectTabs(){
  var wrap=$("projectTabs"); wrap.innerHTML="";
+ var tw=$("projectTabsWrap"); if(tw)tw.style.display=projects.length>1?"":"none";
  projects.forEach(function(p,i){
    var b=document.createElement("button"); b.className="proj"+(i===activeProject?" active":""); b.textContent=p.name;
    b.addEventListener("click",function(){activeProject=i; syncProjectUI()}); wrap.appendChild(b);
@@ -323,7 +333,7 @@ function selectChar(ch,keep){
 function pos(e){var r=$("inkCanvas").getBoundingClientRect(); return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height}}
 function pushHistory(ch){ var p=P(); p.undo[ch]=p.undo[ch]||[]; p.undo[ch].push(JSON.stringify(strokesOf(ch))); if(p.undo[ch].length>60)p.undo[ch].shift(); p.redo[ch]=[]; }
 var ink=$("inkCanvas");
-ink.addEventListener("pointerdown",function(e){e.preventDefault(); ink.setPointerCapture(e.pointerId); pushHistory(currentChar); drawing=true; curStroke={type:tool==="eraser"?"erase":"pen", size:brush, points:[pos(e)]}; glyphs()[currentChar].push(curStroke); redrawInk();});
+ink.addEventListener("pointerdown",function(e){e.preventDefault(); ink.setPointerCapture(e.pointerId); pushHistory(currentChar); drawing=true; curStroke={type:tool==="eraser"?"erase":"pen", size:tool==="eraser"?Math.max(brush*2,24):brush, points:[pos(e)]}; glyphs()[currentChar].push(curStroke); redrawInk();});
 ink.addEventListener("pointermove",function(e){ if(!drawing||!curStroke)return; var p=pos(e), last=curStroke.points[curStroke.points.length-1]; if(Math.hypot(p.x-last.x,p.y-last.y)<3)return; curStroke.points.push(p); redrawInk(); });
 function endStroke(){ if(!drawing)return; drawing=false; curStroke=null; schedulePreview(500); }
 ink.addEventListener("pointerup",endStroke); ink.addEventListener("pointercancel",endStroke); ink.addEventListener("pointerleave",endStroke);
@@ -428,7 +438,7 @@ function buildFont(meta){
  ALL.forEach(function(o){
    var code=o.ch.charCodeAt(0); if(seen[code])return; seen[code]=true;
    var has=strokesOf(o.ch).length>0;
-   var g=new opentype.Glyph({name:"uni"+code.toString(16).toUpperCase(), unicode:code, advanceWidth:o.ch===" "?340:680, path:has?glyphPath(o.ch):new opentype.Path()});
+   var g=new opentype.Glyph({name:"uni"+code.toString(16).toUpperCase(), unicode:code, advanceWidth:ZERO_ADV[o.ch]?0:(o.ch===" "?340:680), path:has?glyphPath(o.ch):new opentype.Path()});
    glyphList.push(g);
  });
  // extra common chars not in picker
@@ -462,6 +472,8 @@ function buildPreview(){
  }catch(e){ $("previewState").textContent="Preview unavailable — export still works"; }
 }
 $("testText").addEventListener("input",function(){$("previewText").textContent=this.value||" "});
+$("sampleEn").onclick=function(){$("testText").value="The quick brown fox jumps over the lazy dog"; $("previewText").textContent=$("testText").value};
+$("sampleAs").onclick=function(){$("testText").value="অসম আমাৰ ৰূপহী"; $("previewText").textContent=$("testText").value};
 $("sizeRange").addEventListener("input",function(){$("previewText").style.fontSize=this.value+"px"; $("sizeLabel").textContent=this.value+"px"});
 $("rebuildBtn").onclick=function(){buildPreview(); setStatus("Preview font rebuilt from your current strokes.","ok")};
 
@@ -512,7 +524,7 @@ $("exportSvg").onclick=function(){
  try{
    var font=buildFont();
    var parts=['<?xml version="1.0" standalone="no"?>','<svg xmlns="http://www.w3.org/2000/svg"><defs>','<font id="'+fileBase()+'" horiz-adv-x="680">','<font-face font-family="'+safeName()+'" units-per-em="1000" ascent="820" descent="-260"/>','<missing-glyph horiz-adv-x="600"/>','<glyph unicode=" " horiz-adv-x="340"/>'];
-   ALL.forEach(function(o){ if(strokesOf(o.ch).length){ var d=glyphPath(o.ch).toPathData(1); var esc=o.ch.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); parts.push('<glyph unicode="'+esc+'" horiz-adv-x="680" d="'+d+'"/>'); } });
+   ALL.forEach(function(o){ if(strokesOf(o.ch).length){ var d=glyphPath(o.ch).toPathData(1); var esc=o.ch.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); parts.push('<glyph unicode="'+esc+'" horiz-adv-x="'+(ZERO_ADV[o.ch]?0:680)+'" d="'+d+'"/>'); } });
    parts.push("</font></defs></svg>");
    download(new Blob([parts.join("\n")],{type:"image/svg+xml"}), fileBase()+"-svg-font.svg");
    setStatus("SVG font exported.","ok");
