@@ -97,6 +97,8 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 .modal label{display:block;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
 .modal label:first-of-type{margin-top:0}
 .modal input{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 12px;color:var(--ink)}
+.modal textarea{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:10px;padding:11px 12px;color:var(--ink);resize:vertical;min-height:64px;font:inherit}
+.modal label .opt{text-transform:none;letter-spacing:0;font-weight:400}
 .modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
 .modal-actions .btn{flex:1;justify-content:center}
 .projects{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
@@ -185,7 +187,7 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 
     <section class="panel exportbox">
       <strong style="font-size:13px;letter-spacing:.1em;text-transform:uppercase">Export your font</strong>
-      <p>Made only from the letters you've drawn — undrawn letters stay blank, so draw at least A–Z for everyday typing. Each .TTF export asks for the font's name, style, version, designer and manufacturer.</p>
+      <p>Made only from the letters you've drawn — undrawn letters stay blank, so draw at least A–Z for everyday typing. Each .TTF export asks for the font's name, style and version, plus optional copyright, description, designer and manufacturer.</p>
       <button class="btn accent" id="exportTtf">↓ Download .TTF font</button>
       <button class="btn" id="exportSvg">↓ Download SVG font</button>
       <button class="btn" id="rebuildBtn">↻ Rebuild preview font</button>
@@ -200,13 +202,17 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 <div class="modal-overlay" id="metaModal" role="dialog" aria-modal="true" aria-labelledby="metaTitle">
   <div class="modal">
     <h2 id="metaTitle">Font details</h2>
-    <p class="sub">These details are written into this .TTF export. You can change them every time you export.</p>
+    <p class="sub">These details are written into this .TTF export. You can change them every time you export. Copyright, description, designer and manufacturer are optional — leave any of them blank.</p>
     <label for="metaFullName">Name</label>
     <input id="metaFullName" value="My Handwriting Regular" maxlength="80" autocomplete="off">
     <label for="metaStyle">Style name</label>
     <input id="metaStyle" value="Regular" maxlength="40" autocomplete="off">
     <label for="metaVersion">Version</label>
     <input id="metaVersion" value="0.1" maxlength="20" autocomplete="off">
+    <label for="metaCopyright">Copyright <span class="opt">(optional)</span></label>
+    <input id="metaCopyright" value="" maxlength="200" autocomplete="off" placeholder="e.g. © 2026 Your Name">
+    <label for="metaDescription">Description <span class="opt">(optional)</span></label>
+    <textarea id="metaDescription" maxlength="500" placeholder="A short note about this font"></textarea>
     <label for="metaDesigner">Designed by</label>
     <input id="metaDesigner" value="" maxlength="80" autocomplete="off" placeholder="Designer name">
     <label for="metaManufacturer">Manufacturer</label>
@@ -404,12 +410,13 @@ function safeName(){ var n=($("fontName").value||"My Handwriting").trim().replac
 
 function buildFont(meta){
  if(typeof opentype==="undefined") throw new Error("Font engine is still loading — check your connection and tap Rebuild.");
- var family=safeName(), styleName="Regular", fullName=family+" Regular", versionRaw="0.1", designer="", manufacturer="";
+ var family=safeName(), styleName="Regular", fullName=family+" Regular", versionRaw="0.1", designer="", manufacturer="", copyright="", description="";
  if(meta){
    fullName=(meta.fullName||"").trim()||fullName;
    styleName=(meta.style||"").trim()||"Regular";
    versionRaw=String(meta.version||"").trim().replace(/^version\s+/i,"")||"0.1";
    designer=(meta.designer||"").trim(); manufacturer=(meta.manufacturer||"").trim();
+   copyright=(meta.copyright||"").trim(); description=(meta.description||"").trim();
    family=fullName;
    if(styleName && fullName.toLowerCase().endsWith(" "+styleName.toLowerCase())) family=fullName.slice(0,fullName.length-styleName.length).trim()||fullName;
    family=family.replace(/[^\w\s-]/g,"").trim()||safeName();
@@ -434,6 +441,8 @@ function buildFont(meta){
    font.names.version={en:"Version "+versionRaw};
    font.names.postScriptName={en:family.replace(/\s+/g,"")+"-"+styleName.replace(/\s+/g,"")};
    font.names.uniqueID={en:fullName+";Version "+versionRaw};
+   if(copyright)font.names.copyright={en:copyright};
+   if(description)font.names.description={en:description};
    if(designer)font.names.designer={en:designer};
    if(manufacturer)font.names.manufacturer={en:manufacturer};
  }catch(e){}
@@ -464,6 +473,8 @@ function openMetaModal(){
  $("metaFullName").value=/ regular$/i.test(base)?base:base+" Regular";
  $("metaStyle").value="Regular";
  $("metaVersion").value="0.1";
+ $("metaCopyright").value="";
+ $("metaDescription").value="";
  $("metaModal").classList.add("open");
  setTimeout(function(){$("metaFullName").focus(); $("metaFullName").select()},50);
 }
@@ -477,7 +488,7 @@ $("metaCancel").onclick=closeMetaModal;
 $("metaModal").addEventListener("click",function(e){if(e.target===this)closeMetaModal()});
 document.addEventListener("keydown",function(e){if(e.key==="Escape")closeMetaModal()});
 $("metaConfirm").onclick=function(){
- var meta={fullName:$("metaFullName").value, style:$("metaStyle").value, version:$("metaVersion").value, designer:$("metaDesigner").value, manufacturer:$("metaManufacturer").value};
+ var meta={fullName:$("metaFullName").value, style:$("metaStyle").value, version:$("metaVersion").value, copyright:$("metaCopyright").value, description:$("metaDescription").value, designer:$("metaDesigner").value, manufacturer:$("metaManufacturer").value};
  if(!meta.fullName.trim()){$("metaFullName").focus(); return}
  if(!meta.style.trim()){$("metaStyle").focus(); return}
  if(!meta.version.trim()){$("metaVersion").focus(); return}
@@ -488,6 +499,8 @@ $("metaConfirm").onclick=function(){
    download(new Blob([buf],{type:"font/ttf"}), fname+".ttf");
    var n=ALL.filter(function(o){return strokesOf(o.ch).length>0}).length;
    var bits=["Name: "+meta.fullName.trim(),"Style: "+meta.style.trim(),"Version: "+String(meta.version).trim().replace(/^version\s+/i,"")];
+   if(meta.copyright.trim())bits.push("Copyright: "+meta.copyright.trim());
+   if(meta.description.trim()){var d=meta.description.trim(); bits.push("Description: "+(d.length>60?d.slice(0,60)+"…":d));}
    if(meta.designer.trim())bits.push("Designed by: "+meta.designer.trim());
    if(meta.manufacturer.trim())bits.push("Manufacturer: "+meta.manufacturer.trim());
    setStatus("Done — "+fname+".ttf exported with "+n+" drawn letters ("+bits.join(" · ")+"). Install it and type with it.","ok");
