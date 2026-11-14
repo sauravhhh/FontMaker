@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>FontMaker — Draw letters, export a real font</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Newsreader:opsz,ital,wght@6..72,0,400;6..72,1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/opentype.js@1.3.4/dist/opentype.min.js"></script>
+<style>
+:root{
+  --bg:#faf6ef; --paper:#fffdf8; --paper2:#f3ecdd; --ink:#171512; --muted:#6f6a5f; --line:#e2d9c6; --line2:#d4c9ae;
+  --accent:#c23b12; --accent2:#1a4d3a; --canvas:#fffefb; --ghost:#171512; --guide:#c9bda0; --guide-strong:#b8542e;
+  --radius:14px; --shadow:0 10px 30px rgba(30,20,5,.08);
+}
+@media (prefers-color-scheme: dark){
+:root{--bg:#141210;--paper:#1e1b18;--paper2:#26221e;--ink:#f2ead9;--muted:#a79e8d;--line:#37312a;--line2:#4a4236;--accent:#ff6a33;--accent2:#7bc7a5;--canvas:#23201c;--ghost:#f2ead9;--guide:#4e463a;--guide-strong:#ff8a5c;--shadow:0 10px 30px rgba(0,0,0,.35)}
+}
+*{box-sizing:border-box} html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit}
+button,[role=button]{min-height:40px}
+a{color:var(--accent)}
+.top{max-width:1280px;margin:0 auto;padding:28px 20px 10px}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-family:"DM Serif Display",serif;font-weight:400;font-size:clamp(36px,6vw,62px);line-height:.95;margin:8px 0 10px;letter-spacing:-.02em}
+h1 em{color:var(--accent)}
+.lede{max-width:680px;color:var(--muted);font-size:17px;margin:0}
+.projectbar{max-width:1280px;margin:18px auto 0;padding:0 20px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.projectbar label{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+#fontName{flex:1 1 220px;background:var(--paper);border:1px solid var(--line2);border-radius:999px;padding:11px 16px;color:var(--ink);font-weight:700;font-size:17px}
+.progresswrap{flex:1 1 180px;min-width:160px}
+.progressmeta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:6px}
+.progress{height:8px;background:var(--paper2);border-radius:999px;overflow:hidden;border:1px solid var(--line)}
+.progress i{display:block;height:100%;background:var(--accent);width:0%;transition:width .3s}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line2);background:var(--paper);color:var(--ink);padding:10px 16px;border-radius:999px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.small{padding:8px 12px;font-size:14px;min-height:38px}
+.btn.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.layout{max-width:1280px;margin:18px auto 0;padding:0 20px 28px;display:grid;grid-template-columns:248px minmax(0,1fr) 320px;gap:16px;align-items:start}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.panel-h{padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.panel-h strong{font-size:13px;letter-spacing:.1em;text-transform:uppercase}
+.panel-h span{font-size:13px;color:var(--muted)}
+.glyphgrid{padding:12px;max-height:640px;overflow:auto}
+.gsection{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 2px 8px;font-weight:700}
+.gsection:first-child{margin-top:0}
+.grow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.glyph{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font-family:"Newsreader",serif;font-size:20px;cursor:pointer;position:relative;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;min-height:42px}
+.glyph.done{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%, var(--paper))}
+.glyph.done::after{content:"";position:absolute;right:6px;top:6px;width:7px;height:7px;border-radius:50%;background:var(--accent2)}
+.glyph.current{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent);font-weight:700}
+.boardwrap{padding:16px}
+.boardhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.currentchar{display:flex;align-items:baseline;gap:10px}
+.currentchar b{font-family:"DM Serif Display",serif;font-size:44px;line-height:1}
+.currentchar span{color:var(--muted);font-size:14px}
+.tools{display:flex;flex-wrap:wrap;gap:6px}
+.tool{width:44px;height:44px;border-radius:999px;border:1px solid var(--line2);background:var(--paper);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:var(--ink)}
+.tool.active{background:var(--ink);color:var(--bg)}
+.brushes{display:flex;gap:6px;align-items:center;background:var(--paper2);border-radius:999px;padding:4px}
+.brush{border:0;background:transparent;border-radius:999px;min-width:40px;cursor:pointer;color:var(--ink);display:flex;align-items:center;justify-content:center}
+.brush.active{background:var(--paper);box-shadow:0 1px 6px rgba(0,0,0,.12)}
+.dot{display:block;border-radius:50%;background:currentColor}
+.stage{position:relative;background:var(--canvas);border:1px solid var(--line2);border-radius:14px;overflow:hidden;aspect-ratio:600/680}
+.stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+#inkCanvas{touch-action:none;cursor:crosshair}
+#ghost{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Newsreader",serif;font-size:min(62vw,430px);line-height:1;color:var(--ghost);opacity:.07;pointer-events:none;transform:translateY(-4%)}
+.checks{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px}
+.checks label{display:flex;gap:8px;align-items:center;min-height:36px;cursor:pointer;font-size:14px;color:var(--muted)}
+.checks input{width:20px;height:20px;accent-color:var(--accent)}
+.boardfoot{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.hint{font-size:13px;color:var(--muted);margin:10px 0 0}
+.side{display:grid;gap:16px}
+.previewbox{padding:16px}
+#testText{width:100%;border:1px solid var(--line2);background:var(--bg);color:var(--ink);border-radius:10px;padding:11px 12px}
+#previewText{font-family:"MyHandPreview", "Newsreader", serif;font-size:42px;line-height:1.15;margin:16px 0 6px;word-break:break-word;min-height:96px}
+.previewnote{font-size:13px;color:var(--muted)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.exportbox{padding:16px}
+.exportbox p{color:var(--muted);font-size:14px;margin:6px 0 12px}
+.exportbox .btn{width:100%;justify-content:center;margin-bottom:8px}
+.status{font-size:13px;border-radius:10px;padding:10px 12px;background:var(--paper2);color:var(--muted);margin-top:10px;display:none}
+.status.show{display:block}
+.status.ok{color:var(--accent2)} .status.err{color:var(--accent)}
+.how{max-width:1280px;margin:0 auto;padding:0 20px 36px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.how article{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
+.how h3{margin:0 0 6px;font-family:"DM Serif Display",serif;font-weight:400;font-size:21px}
+.how p{margin:0;color:var(--muted);font-size:14px}
+.how .num{font-size:12px;letter-spacing:.14em;color:var(--accent);font-weight:700}
+footer{max-width:1280px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+.projects{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
+.proj{font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--paper);cursor:pointer}
+.proj.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+@media(max-width:1020px){.layout{grid-template-columns:200px minmax(0,1fr)}.side{grid-column:1/-1;grid-template-columns:1fr 1fr}.how{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){.layout{grid-template-columns:1fr}.glyphgrid{max-height:260px}.side{grid-template-columns:1fr}.how{grid-template-columns:1fr}.top{padding-top:20px}#ghost{font-size:340px}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="eyebrow">Hand-lettering studio</div>
+  <h1>Draw it. <em>Install it.</em><br>Your own font.</h1>
+  <p class="lede">Draw every letter freehand on the guided board. FontMaker turns your strokes into real outlines and exports a genuine <strong>.TTF</strong> you can install on your phone or computer — plus an SVG font.</p>
+</header>
+
+<div class="projectbar">
+  <label for="fontName">Font name</label>
+  <input id="fontName" value="My Handwriting" maxlength="40" autocomplete="off">
+  <div class="progresswrap">
+    <div class="progressmeta"><span id="progressLabel">0 of 75 drawn</span><span>Start with A, B, C</span></div>
+    <div class="progress"><i id="progressBar"></i></div>
+  </div>
+  <div class="actions">
+    <button class="btn small" id="newProjectBtn">＋ New font</button>
+    <button class="btn small" id="saveJsonBtn">↓ Project file</button>
+    <label class="btn small" for="loadJson" style="cursor:pointer">↑ Open project</label>
+    <input id="loadJson" type="file" accept=".json,application/json" hidden>
+  </div>
+</div>
+<div style="max-width:1280px;margin:8px auto 0;padding:0 20px"><div class="projects" id="projectTabs" style="padding:0"></div></div>
+
+<main class="layout">
+  <!-- Glyph picker -->
+  <section class="panel" aria-label="Letters">
+    <div class="panel-h"><strong>Letters</strong><span id="doneCount">0 drawn</span></div>
+    <div class="glyphgrid" id="glyphGrid"></div>
+  </section>
+
+  <!-- Drawing board -->
+  <section class="panel boardwrap" aria-label="Drawing board">
+    <div class="boardhead">
+      <div class="currentchar"><b id="curCharLabel">A</b><span id="curCharMeta">Uppercase · draw inside the guides</span></div>
+      <div class="tools" role="toolbar" aria-label="Drawing tools">
+        <button class="tool active" id="penBtn" title="Pen" aria-label="Pen">✎</button>
+        <button class="tool" id="eraserBtn" title="Eraser" aria-label="Eraser">⌫</button>
+        <div class="brushes" aria-label="Brush size">
+          <button class="brush" data-size="7" aria-label="Thin brush"><span class="dot" style="width:7px;height:7px"></span></button>
+          <button class="brush active" data-size="14" aria-label="Medium brush"><span class="dot" style="width:13px;height:13px"></span></button>
+          <button class="brush" data-size="24" aria-label="Thick brush"><span class="dot" style="width:21px;height:21px"></span></button>
+        </div>
+        <button class="tool" id="undoBtn" title="Undo" aria-label="Undo">↩</button>
+        <button class="tool" id="redoBtn" title="Redo" aria-label="Redo">↪</button>
+      </div>
+    </div>
+
+    <div class="stage" id="stage">
+      <canvas id="guideCanvas" width="600" height="680"></canvas>
+      <div id="ghost">A</div>
+      <canvas id="inkCanvas" width="600" height="680"></canvas>
+    </div>
+
+    <div class="checks">
+      <label><input type="checkbox" id="ghostToggle" checked> Ghost letter</label>
+      <label><input type="checkbox" id="guideToggle" checked> Guide lines</label>
+    </div>
+    <div class="boardfoot">
+      <button class="btn small" id="prevBtn">← Prev</button>
+      <button class="btn small" id="nextBtn">Next letter →</button>
+      <button class="btn small" id="clearBtn">Clear this letter</button>
+      <button class="btn small" id="sampleBtn">Try a sample “Aa”</button>
+    </div>
+    <p class="hint">Guides: top line is cap height, dotted line is x-height (lowercase body), thick line is the baseline your letters sit on, bottom area is for tails like <em>g, j, p, q, y</em>. Draw with mouse, finger or stylus.</p>
+  </section>
+
+  <!-- Preview + export -->
+  <aside class="side">
+    <section class="panel previewbox">
+      <div style="display:flex;justify-content:space-between;align-items:center"><strong style="font-size:13px;letter-spacing:.1em;text-transform:uppercase">Live preview</strong><span style="font-size:12px;color:var(--muted)" id="previewState">Draw a letter to begin</span></div>
+      <div id="previewText">The quick brown fox jumps over the lazy dog</div>
+      <label style="font-size:13px;color:var(--muted)">Test text</label>
+      <input id="testText" value="The quick brown fox jumps over the lazy dog">
+      <label style="font-size:13px;color:var(--muted);display:block;margin-top:12px">Size <span id="sizeLabel">42px</span></label>
+      <input type="range" id="sizeRange" min="22" max="84" value="42">
+      <p class="previewnote">This preview is rendered from the actual TTF built from your strokes — letters you haven't drawn yet fall back to a serif.</p>
+    </section>
+
+    <section class="panel exportbox">
+      <strong style="font-size:13px;letter-spacing:.1em;text-transform:uppercase">Export your font</strong>
+      <p>A real font file, made only from the letters you've drawn. Undrawn letters are left blank — draw at least A–Z to use it for everyday typing.</p>
+      <button class="btn accent" id="exportTtf">↓ Download .TTF font</button>
+      <button class="btn" id="exportSvg">↓ Download SVG font</button>
+      <button class="btn" id="rebuildBtn">↻ Rebuild preview font</button>
+      <div class="status" id="statusBox"></div>
+      <p style="margin-top:12px"><strong style="color:var(--ink)">Install it:</strong> Windows — double-click the .TTF → Install. Mac — open in Font Book → Install. Android — use a font installer / zFont with the .TTF. iPhone — install via iFont or AnyFont, then pick it in apps that support custom fonts.</p>
+    </section>
+  </aside>
+</main>
+
+<section class="how">
+  <article><div class="num">01 — DRAW</div><h3>One letter at a time</h3><p>Pick a letter on the left, trace over the faint ghost or go freehand. Pen, eraser, three brush sizes, undo and redo are all on the board.</p></article>
+  <article><div class="num">02 — PREVIEW</div><h3>See it as a font</h3><p>As you draw, FontMaker rebuilds a working TTF in your browser and types your test sentence in it, so you can spot letters that need a fix.</p></article>
+  <article><div class="num">03 — EXPORT</div><h3>Take the file</h3><p>Download the .TTF and install it anywhere. Save a project file too — open it here later to keep editing the same font, or start a second font alongside it.</p></article>
+</section>
+
+<footer><span>FontMaker — drawings stay in this tab until you download them. Save a project file to keep your work.</span><span>Made for hand-drawn type.</span></footer>
+
+<script>
+(function(){
+"use strict";
+var SETS=[
+ {label:"Uppercase A–Z", chars:"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), meta:"Uppercase"},
+ {label:"Lowercase a–z", chars:"abcdefghijklmnopqrstuvwxyz".split(""), meta:"Lowercase"},
+ {label:"Numbers 0–9", chars:"0123456789".split(""), meta:"Number"},
+ {label:"Symbols", chars:["."," ,","!","?",";",":","'","-","(",")","@","#","&","*","+","="].map(function(s){return s.trim()}), meta:"Symbol"}
+];
+// fix symbols list explicitly
+SETS[3].chars=[".",",","!","?",";",":","'","\"","-","(",")","@","#","&","*","+","=","/"];
+var ALL=[]; SETS.forEach(function(s){s.chars.forEach(function(c){ALL.push({ch:c,meta:s.meta})})});
+var BASELINE=520, W=600, H=680, SCALE=1.35;
+
+var projects=[], activeProject=0, uid=1;
+function newGlyphs(){ var g={}; ALL.forEach(function(o){g[o.ch]=[]}); g[" "]=[]; return g; }
+function makeProject(name){ return {id:uid++, name:name||"My Handwriting", glyphs:newGlyphs(), undo:{}, redo:{}}; }
+projects.push(makeProject("My Handwriting"));
+var currentChar="A", tool="pen", brush=14, drawing=false, curStroke=null, previewTimer=null, previewFontName="";
+
+function P(){return projects[activeProject]}
+function $(id){return document.getElementById(id)}
+function glyphs(){return P().glyphs}
+function strokesOf(ch){return glyphs()[ch]||[]}
+function setStatus(msg,cls){var b=$("statusBox");b.textContent=msg;b.className="status show "+(cls||""); if(!msg)b.className="status"}
+
+/* ---------- glyph grid ---------- */
+function buildGrid(){
+ var grid=$("glyphGrid"); grid.innerHTML="";
+ SETS.forEach(function(set){
+   var h=document.createElement("div"); h.className="gsection"; h.textContent=set.label; grid.appendChild(h);
+   var row=document.createElement("div"); row.className="grow";
+   set.chars.forEach(function(ch){
+     var b=document.createElement("button"); b.className="glyph"; b.textContent=ch===" "?"␣":ch; b.dataset.ch=ch; b.setAttribute("aria-label","Draw letter "+ch);
+     b.addEventListener("click",function(){selectChar(ch)}); row.appendChild(b);
+   });
+   grid.appendChild(row);
+ });
+ refreshGrid();
+}
+function refreshGrid(){
+ var done=0;
+ document.querySelectorAll(".glyph").forEach(function(b){
+   var has=strokesOf(b.dataset.ch).length>0; b.classList.toggle("done",has); b.classList.toggle("current",b.dataset.ch===currentChar); if(has)done++;
+ });
+ $("doneCount").textContent=done+" drawn";
+ $("progressLabel").textContent=done+" of "+ALL.length+" drawn";
+ $("progressBar").style.width=Math.round(done/ALL.length*100)+"%";
+}
+function buildProjectTabs(){
+ var wrap=$("projectTabs"); wrap.innerHTML="";
+ projects.forEach(function(p,i){
+   var b=document.createElement("button"); b.className="proj"+(i===activeProject?" active":""); b.textContent=p.name;
+   b.addEventListener("click",function(){activeProject=i; syncProjectUI()}); wrap.appendChild(b);
+ });
+}
+function syncProjectUI(){ $("fontName").value=P().name; buildProjectTabs(); selectChar(currentChar,true); schedulePreview(100); }
+
+/* ---------- guides & ghost ---------- */
+function drawGuides(){
+ var c=$("guideCanvas"), ctx=c.getContext("2d"); ctx.clearRect(0,0,W,H);
+ if(!$("guideToggle").checked) return;
+ var cs=getComputedStyle(document.documentElement);
+ var guide=cs.getPropertyValue("--guide").trim()||"#c9bda0", strong=cs.getPropertyValue("--guide-strong").trim()||"#b8542e";
+ function line(y,color,dash,w){ctx.beginPath();ctx.setLineDash(dash||[]);ctx.strokeStyle=color;ctx.lineWidth=w||1;ctx.moveTo(18,y);ctx.lineTo(W-18,y);ctx.stroke();ctx.setLineDash([])}
+ line(180,guide); line(320,guide,[7,7]); line(BASELINE,strong,[],2); line(640,guide,[3,7]);
+ ctx.fillStyle=strong; ctx.font="11px DM Sans, sans-serif";
+ ctx.fillText("CAP",22,172); ctx.fillText("x-HEIGHT",22,312); ctx.fillText("BASELINE",22,BASELINE-8); ctx.fillText("DESCENDER",22,632);
+ // side margins
+ ctx.beginPath();ctx.strokeStyle=guide;ctx.setLineDash([3,7]);ctx.moveTo(70,40);ctx.lineTo(70,H-30);ctx.moveTo(W-70,40);ctx.lineTo(W-70,H-30);ctx.stroke();ctx.setLineDash([]);
+}
+
+/* ---------- ink rendering ---------- */
+function drawStroke(ctx,s){
+ ctx.beginPath();
+ ctx.lineCap="round"; ctx.lineJoin="round"; ctx.lineWidth=s.size;
+ if(s.type==="erase"){ctx.globalCompositeOperation="destination-out"; ctx.strokeStyle="rgba(0,0,0,1)";}
+ else{ctx.globalCompositeOperation="source-over"; ctx.strokeStyle="#191612";}
+ if(s.points.length===1){ctx.arc(s.points[0].x,s.points[0].y,s.size/2,0,Math.PI*2); ctx.fillStyle="#191612"; if(s.type==="erase"){ctx.fill()}else{ctx.fill()} }
+ else{ctx.moveTo(s.points[0].x,s.points[0].y); for(var i=1;i<s.points.length;i++)ctx.lineTo(s.points[i].x,s.points[i].y); ctx.stroke();}
+ ctx.globalCompositeOperation="source-over";
+}
+function redrawInk(){
+ var c=$("inkCanvas"), ctx=c.getContext("2d"); ctx.clearRect(0,0,W,H);
+ strokesOf(currentChar).forEach(function(s){drawStroke(ctx,s)});
+ refreshGrid();
+}
+function selectChar(ch,keep){
+ currentChar=ch;
+ var meta=(ALL.find(function(o){return o.ch===ch})||{}).meta||"";
+ $("curCharLabel").textContent=ch; $("curCharMeta").textContent=meta+" · draw inside the guides";
+ $("ghost").textContent=ch; $("ghost").style.display=$("ghostToggle").checked?"flex":"none";
+ redrawInk();
+}
+
+/* ---------- drawing input ---------- */
+function pos(e){var r=$("inkCanvas").getBoundingClientRect(); return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height}}
+function pushHistory(ch){ var p=P(); p.undo[ch]=p.undo[ch]||[]; p.undo[ch].push(JSON.stringify(strokesOf(ch))); if(p.undo[ch].length>60)p.undo[ch].shift(); p.redo[ch]=[]; }
+var ink=$("inkCanvas");
+ink.addEventListener("pointerdown",function(e){e.preventDefault(); ink.setPointerCapture(e.pointerId); pushHistory(currentChar); drawing=true; curStroke={type:tool==="eraser"?"erase":"pen", size:brush, points:[pos(e)]}; glyphs()[currentChar].push(curStroke); redrawInk();});
+ink.addEventListener("pointermove",function(e){ if(!drawing||!curStroke)return; var p=pos(e), last=curStroke.points[curStroke.points.length-1]; if(Math.hypot(p.x-last.x,p.y-last.y)<3)return; curStroke.points.push(p); redrawInk(); });
+function endStroke(){ if(!drawing)return; drawing=false; curStroke=null; schedulePreview(500); }
+ink.addEventListener("pointerup",endStroke); ink.addEventListener("pointercancel",endStroke); ink.addEventListener("pointerleave",endStroke);
+
+/* tools */
+function setTool(t){tool=t; $("penBtn").classList.toggle("active",t==="pen"); $("eraserBtn").classList.toggle("active",t==="eraser");}
+$("penBtn").onclick=function(){setTool("pen")}; $("eraserBtn").onclick=function(){setTool("eraser")};
+document.querySelectorAll(".brush").forEach(function(b){b.addEventListener("click",function(){brush=+b.dataset.size; document.querySelectorAll(".brush").forEach(function(x){x.classList.toggle("active",x===b)}); setTool(tool)})});
+$("undoBtn").onclick=function(){var p=P(); p.undo[currentChar]=p.undo[currentChar]||[]; if(!p.undo[currentChar].length)return; p.redo[currentChar]=p.redo[currentChar]||[]; p.redo[currentChar].push(JSON.stringify(strokesOf(currentChar))); glyphs()[currentChar]=JSON.parse(p.undo[currentChar].pop()); redrawInk(); schedulePreview(400);};
+$("redoBtn").onclick=function(){var p=P(); p.redo[currentChar]=p.redo[currentChar]||[]; if(!p.redo[currentChar].length)return; p.undo[currentChar]=p.undo[currentChar]||[]; p.undo[currentChar].push(JSON.stringify(strokesOf(currentChar))); glyphs()[currentChar]=JSON.parse(p.redo[currentChar].pop()); redrawInk(); schedulePreview(400);};
+$("clearBtn").onclick=function(){ if(!strokesOf(currentChar).length)return; pushHistory(currentChar); glyphs()[currentChar]=[]; redrawInk(); schedulePreview(400); };
+$("ghostToggle").onchange=function(){$("ghost").style.display=this.checked?"flex":"none"};
+$("guideToggle").onchange=drawGuides;
+function step(dir){var i=ALL.findIndex(function(o){return o.ch===currentChar}); i=(i+dir+ALL.length)%ALL.length; selectChar(ALL[i].ch)}
+$("nextBtn").onclick=function(){step(1)}; $("prevBtn").onclick=function(){step(-1)};
+document.addEventListener("keydown",function(e){ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault(); e.shiftKey?$("redoBtn").click():$("undoBtn").click();}});
+
+/* sample Aa — simple hand-like strokes to demo export instantly */
+$("sampleBtn").onclick=function(){
+ function stroke(ch,pts,size){glyphs()[ch]=[{type:"pen",size:size||15,points:pts.map(function(p){return{x:p[0],y:p[1]}})}]}
+ stroke("A",[[130,520],[270,190],[300,190],[470,520]]); // will be replaced by two strokes below
+ glyphs()["A"]=[{type:"pen",size:15,points:[{x:120,y:520},{x:280,y:190},{x:300,y:185}]},{type:"pen",size:15,points:[{x:300,y:185},{x:480,y:520}]},{type:"pen",size:15,points:[{x:195,y:390},{x:405,y:390}]}];
+ glyphs()["a"]=[{type:"pen",size:15,points:[{x:390,y:350},{x:300,y:322},{x:205,y:360},{x:190,y:450},{x:230,y:515},{x:330,y:520},{x:395,y:470}]},{type:"pen",size:15,points:[{x:395,y:330},{x:395,y:520}]}];
+ selectChar("A"); setStatus("Sample A and a added — check the preview, then export a test TTF.","ok"); schedulePreview(200);
+};
+
+/* ---------- stroke → outline ---------- */
+function effectiveStrokes(strokes){
+ var eff=[];
+ strokes.forEach(function(s){
+   if(s.type==="pen"){eff.push({size:s.size, points:s.points.slice()})}
+   else{
+     var next=[];
+     eff.forEach(function(p){
+       var r=(s.size+p.size)/2*0.95, cur=[];
+       p.points.forEach(function(pt){
+         var hit=s.points.some(function(ep){return Math.hypot(ep.x-pt.x,ep.y-pt.y)<r});
+         if(!hit){cur.push(pt)} else { if(cur.length>1)next.push({size:p.size,points:cur}); else if(cur.length===1)next.push({size:p.size,points:cur}); cur=[]; }
+       });
+       if(cur.length)next.push({size:p.size,points:cur});
+     });
+     eff=next;
+   }
+ });
+ return eff;
+}
+function toFontPt(p){return [p.x*SCALE, (BASELINE-p.y)*SCALE]}
+function strokePath(pointsCanvas, size){
+ var pts=pointsCanvas.map(toFontPt), r=size*SCALE/2, path=new opentype.Path();
+ if(pts.length===1){
+   var cx=pts[0][0], cy=pts[0][1];
+   path.moveTo(cx+r,cy);
+   path.curveTo(cx+r,cy+r*0.55,cx+r*0.55,cy+r,cx,cy+r);
+   path.curveTo(cx-r*0.55,cy+r,cx-r,cy+r*0.55,cx-r,cy);
+   path.curveTo(cx-r,cy-r*0.55,cx-r*0.55,cy-r,cx,cy-r);
+   path.curveTo(cx+r*0.55,cy-r,cx+r,cy-r*0.55,cx+r,cy);
+   path.closePath(); return path;
+ }
+ var left=[], right=[];
+ for(var i=0;i<pts.length;i++){
+   var prev=pts[Math.max(0,i-1)], next=pts[Math.min(pts.length-1,i+1)];
+   var dx=next[0]-prev[0], dy=next[1]-prev[1], len=Math.hypot(dx,dy)||1; dx/=len; dy/=len;
+   var nx=-dy, ny=dx;
+   left.push([pts[i][0]+nx*r, pts[i][1]+ny*r]); right.push([pts[i][0]-nx*r, pts[i][1]-ny*r]);
+ }
+ path.moveTo(left[0][0],left[0][1]);
+ for(var j=1;j<left.length;j++)path.lineTo(left[j][0],left[j][1]);
+ // end cap
+ var end=pts[pts.length-1], ePrev=pts[pts.length-2], edx=end[0]-ePrev[0], edy=end[1]-ePrev[1], el=Math.hypot(edx,edy)||1; edx/=el; edy/=el;
+ for(var a=1;a<=3;a++){var t=Math.PI*a/4; /* semicircle points */ var ang=Math.atan2(-(-edy),edx); }
+ // simple round cap via quadratic through tip
+ path.quadraticCurveTo(end[0]+edx*r*1.4, end[1]+edy*r*1.4, right[right.length-1][0], right[right.length-1][1]);
+ for(var k=right.length-2;k>=0;k--)path.lineTo(right[k][0],right[k][1]);
+ var start=pts[0], sNext=pts[1], sdx=start[0]-sNext[0], sdy=start[1]-sNext[1], sl=Math.hypot(sdx,sdy)||1; sdx/=sl; sdy/=sl;
+ path.quadraticCurveTo(start[0]+sdx*r*1.4, start[1]+sdy*r*1.4, left[0][0], left[0][1]);
+ path.closePath(); return path;
+}
+function glyphPath(ch){
+ var eff=effectiveStrokes(strokesOf(ch)), combined=new opentype.Path();
+ eff.forEach(function(s){ var p=strokePath(s.points,s.size); p.commands.forEach(function(cmd){combined.commands.push(cmd)}) });
+ return combined;
+}
+function safeName(){ var n=($("fontName").value||"My Handwriting").trim().replace(/[^\w\s-]/g,"").trim(); return n||"MyHandwriting"; }
+
+function buildFont(){
+ if(typeof opentype==="undefined") throw new Error("Font engine is still loading — check your connection and tap Rebuild.");
+ var family=safeName();
+ var glyphList=[];
+ glyphList.push(new opentype.Glyph({name:".notdef", unicode:0, advanceWidth:600, path:new opentype.Path()}));
+ var space=new opentype.Glyph({name:"space", unicode:32, advanceWidth:340, path:new opentype.Path()}); glyphList.push(space);
+ var seen={32:true};
+ ALL.forEach(function(o){
+   var code=o.ch.charCodeAt(0); if(seen[code])return; seen[code]=true;
+   var has=strokesOf(o.ch).length>0;
+   var g=new opentype.Glyph({name:"uni"+code.toString(16).toUpperCase(), unicode:code, advanceWidth:o.ch===" "?340:680, path:has?glyphPath(o.ch):new opentype.Path()});
+   glyphList.push(g);
+ });
+ // extra common chars not in picker
+ [8211,8212,8220,8221,8216,8217].forEach(function(code){ if(!seen[code]){glyphList.push(new opentype.Glyph({name:"uni"+code.toString(16), unicode:code, advanceWidth:500, path:new opentype.Path()}))} });
+ var font=new opentype.Font({familyName:family, styleName:"Regular", unitsPerEm:1000, ascender:820, descender:-260, glyphs:glyphList});
+ return font;
+}
+
+/* ---------- preview from real TTF ---------- */
+function schedulePreview(ms){ clearTimeout(previewTimer); previewTimer=setTimeout(buildPreview, ms||600); }
+function buildPreview(){
+ var any=ALL.some(function(o){return strokesOf(o.ch).length>0});
+ if(!any){$("previewState").textContent="Draw a letter to begin"; return}
+ try{
+   var font=buildFont(); var buf=font.toArrayBuffer();
+   var name="MyHandPreview";
+   var face=new FontFace(name, buf);
+   face.load().then(function(loaded){ document.fonts.add(loaded); $("previewText").style.fontFamily='"'+name+'","Newsreader",serif'; $("previewState").textContent="Live — built from your TTF"; }).catch(function(){ $("previewState").textContent="Preview unavailable — export still works"; });
+ }catch(e){ $("previewState").textContent="Preview unavailable — export still works"; }
+}
+$("testText").addEventListener("input",function(){$("previewText").textContent=this.value||" "});
+$("sizeRange").addEventListener("input",function(){$("previewText").style.fontSize=this.value+"px"; $("sizeLabel").textContent=this.value+"px"});
+$("rebuildBtn").onclick=function(){buildPreview(); setStatus("Preview font rebuilt from your current strokes.","ok")};
+
+/* ---------- downloads ---------- */
+function download(blob,filename){var a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click(); setTimeout(function(){URL.revokeObjectURL(a.href); a.remove()},400)}
+function fileBase(){return safeName().replace(/\s+/g,"")}
+$("exportTtf").onclick=function(){
+ var any=ALL.some(function(o){return strokesOf(o.ch).length>0});
+ if(!any){setStatus("Draw at least one letter first — A is a good start.","err"); return}
+ try{ var font=buildFont(); var buf=font.toArrayBuffer(); download(new Blob([buf],{type:"font/ttf"}), fileBase()+".ttf"); var n=ALL.filter(function(o){return strokesOf(o.ch).length>0}).length; setStatus("Done — "+fileBase()+".ttf exported with "+n+" drawn letters. Install it and type with it.","ok"); }
+ catch(e){ setStatus("Export failed: "+e.message,"err"); }
+};
+$("exportSvg").onclick=function(){
+ var any=ALL.some(function(o){return strokesOf(o.ch).length>0});
+ if(!any){setStatus("Draw at least one letter first.","err"); return}
+ try{
+   var font=buildFont();
+   var parts=['<?xml version="1.0" standalone="no"?>','<svg xmlns="http://www.w3.org/2000/svg"><defs>','<font id="'+fileBase()+'" horiz-adv-x="680">','<font-face font-family="'+safeName()+'" units-per-em="1000" ascent="820" descent="-260"/>','<missing-glyph horiz-adv-x="600"/>','<glyph unicode=" " horiz-adv-x="340"/>'];
+   ALL.forEach(function(o){ if(strokesOf(o.ch).length){ var d=glyphPath(o.ch).toPathData(1); var esc=o.ch.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); parts.push('<glyph unicode="'+esc+'" horiz-adv-x="680" d="'+d+'"/>'); } });
+   parts.push("</font></defs></svg>");
+   download(new Blob([parts.join("\n")],{type:"image/svg+xml"}), fileBase()+"-svg-font.svg");
+   setStatus("SVG font exported.","ok");
+ }catch(e){ setStatus("SVG export failed: "+e.message,"err"); }
+};
+
+/* ---------- projects (in this tab) + project file ---------- */
+$("fontName").addEventListener("input",function(){P().name=this.value; buildProjectTabs()});
+$("newProjectBtn").onclick=function(){ projects.push(makeProject("Font "+(projects.length+1))); activeProject=projects.length-1; currentChar="A"; syncProjectUI(); setStatus("New font started alongside your others in this tab. Download a project file to keep it after closing.","ok"); };
+$("saveJsonBtn").onclick=function(){ var data={name:P().name, glyphs:glyphs()}; download(new Blob([JSON.stringify(data)],{type:"application/json"}), fileBase()+"-project.json"); setStatus("Project file saved — open it here any time to continue this font.","ok"); };
+$("loadJson").addEventListener("change",function(){
+ var f=this.files[0]; if(!f)return;
+ f.text().then(function(t){ try{ var d=JSON.parse(t); var p=makeProject(d.name||"Imported Font"); Object.keys(d.glyphs||{}).forEach(function(k){p.glyphs[k]=d.glyphs[k]}); projects.push(p); activeProject=projects.length-1; syncProjectUI(); setStatus("Project opened: "+p.name,"ok"); }catch(e){ setStatus("That project file could not be read.","err"); } });
+ this.value="";
+});
+
+/* init */
+buildGrid(); buildProjectTabs(); drawGuides(); selectChar("A"); buildPreview();
+window.addEventListener("resize",drawGuides);
+})();
+</script>
+</body>
+</html>
