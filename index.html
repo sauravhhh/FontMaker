@@ -47,7 +47,7 @@ a{color:var(--accent)}
 .panel-h span{font-size:13px;color:var(--muted)}
 .glyphgrid{padding:12px;max-height:300px;overflow:auto}
 .gsection{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:14px 2px 8px;font-weight:700}
-.gsection:first-child{margin-top:0}
+.gset:first-child .gsection{margin-top:0}
 .grow{display:grid;grid-template-columns:repeat(auto-fill,minmax(42px,1fr));gap:6px}
 .glyph{aspect-ratio:1;border:1px solid var(--line);background:var(--paper);border-radius:10px;font-family:"Newsreader","Noto Serif Bengali",serif;font-size:20px;cursor:pointer;position:relative;color:var(--ink);display:flex;align-items:center;justify-content:center;padding:0;min-height:42px}
 .glyph.done{border-color:var(--accent2);background:color-mix(in srgb,var(--accent2) 10%, var(--paper))}
@@ -103,6 +103,12 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 .projects{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 12px}
 .proj{font-size:13px;padding:7px 11px;border-radius:999px;border:1px solid var(--line2);background:var(--paper);cursor:pointer}
 .proj.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.langbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 12px 0}
+.langbar .langlabel{font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.langseg{display:flex;gap:4px;background:var(--paper2);border:1px solid var(--line);border-radius:999px;padding:4px;flex-wrap:wrap}
+.langbtn{border:0;background:transparent;border-radius:999px;padding:8px 14px;min-height:38px;cursor:pointer;color:var(--ink);font-weight:700;font-size:14px}
+.langbtn.active{background:var(--ink);color:var(--bg)}
+.langnote{font-size:13px;color:var(--muted);padding:8px 12px 0;margin:0}
 @media(max-width:680px){.glyphgrid{max-height:260px}.side{grid-template-columns:1fr}.top{padding-top:20px}#ghost{font-size:340px}}
 </style>
 </head>
@@ -133,6 +139,15 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
   <!-- Glyph picker -->
   <section class="panel" aria-label="Letters">
     <div class="panel-h"><strong>Letters</strong><span id="doneCount">0 drawn</span></div>
+    <div class="langbar">
+      <span class="langlabel" id="langLabel">Language</span>
+      <div class="langseg" role="group" aria-labelledby="langLabel">
+        <button type="button" class="langbtn active" data-lang="all">All</button>
+        <button type="button" class="langbtn" data-lang="en">English</button>
+        <button type="button" class="langbtn" data-lang="as">অসমীয়া</button>
+      </div>
+    </div>
+    <p class="langnote" id="langNote">Showing all letters — English and অসমীয়া.</p>
     <div class="glyphgrid" id="glyphGrid"></div>
   </section>
 
@@ -150,6 +165,7 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
         </div>
         <button class="tool" id="undoBtn" title="Undo" aria-label="Undo">↩</button>
         <button class="tool" id="redoBtn" title="Redo" aria-label="Redo">↪</button>
+        <button class="tool labeled" id="clearAllBtn" title="Erase every stroke on this letter's board" aria-label="Clear all strokes on this letter">Clear All</button>
       </div>
     </div>
 
@@ -231,19 +247,20 @@ footer{max-width:880px;margin:0 auto;padding:0 20px 34px;color:var(--muted);font
 (function(){
 "use strict";
 var SETS=[
- {label:"Uppercase A–Z", chars:"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), meta:"Uppercase"},
- {label:"Lowercase a–z", chars:"abcdefghijklmnopqrstuvwxyz".split(""), meta:"Lowercase"},
- {label:"Numbers 0–9", chars:"0123456789".split(""), meta:"Number"},
- {label:"Symbols", chars:["."," ,","!","?",";",":","'","-","(",")","@","#","&","*","+","="].map(function(s){return s.trim()}), meta:"Symbol"},
- {label:"Assamese · স্বৰবৰ্ণ — Vowels", chars:"অআইঈউঊঋএঐওঔ".split(""), meta:"Assamese vowel"},
- {label:"Assamese · ব্যঞ্জনবৰ্ণ — Consonants", chars:"কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযৰলৱশষসহ".split(""), meta:"Assamese consonant"},
- {label:"Assamese · Extra letters", chars:["\u09DC","\u09DD","\u09DF","\u09CE"], meta:"Assamese letter"},
- {label:"Assamese · মাত্ৰা — Matra & signs", chars:"ািীুূৃেৈোৌ্ংঃঁ".split(""), meta:"Assamese matra"},
- {label:"Assamese · সংখ্যা — Numbers", chars:"০১২৩৪৫৬৭৮৯".split(""), meta:"Assamese digit"}
+ {label:"Uppercase A–Z", lang:"en", chars:"ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""), meta:"Uppercase"},
+ {label:"Lowercase a–z", lang:"en", chars:"abcdefghijklmnopqrstuvwxyz".split(""), meta:"Lowercase"},
+ {label:"Numbers 0–9", lang:"en", chars:"0123456789".split(""), meta:"Number"},
+ {label:"Symbols", lang:"en", chars:["."," ,","!","?",";",":","'","-","(",")","@","#","&","*","+","="].map(function(s){return s.trim()}), meta:"Symbol"},
+ {label:"Assamese · স্বৰবৰ্ণ — Vowels", lang:"as", chars:"অআইঈউঊঋএঐওঔ".split(""), meta:"Assamese vowel"},
+ {label:"Assamese · ব্যঞ্জনবৰ্ণ — Consonants", lang:"as", chars:"কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযৰলৱশষসহ".split(""), meta:"Assamese consonant"},
+ {label:"Assamese · Extra letters", lang:"as", chars:["\u09DC","\u09DD","\u09DF","\u09CE"], meta:"Assamese letter"},
+ {label:"Assamese · মাত্ৰা — Matra & signs", lang:"as", chars:"ািীুূৃেৈোৌ্ংঃঁ".split(""), meta:"Assamese matra"},
+ {label:"Assamese · সংখ্যা — Numbers", lang:"as", chars:"০১২৩৪৫৬৭৮৯".split(""), meta:"Assamese digit"}
 ];
 // fix symbols list explicitly
 SETS[3].chars=[".",",","!","?",";",":","'","\"","-","(",")","@","#","&","*","+","=","/"];
 var ALL=[]; SETS.forEach(function(s){s.chars.forEach(function(c){ALL.push({ch:c,meta:s.meta})})});
+var CHAR_LANG={}; SETS.forEach(function(s){s.chars.forEach(function(c){CHAR_LANG[c]=s.lang||"en"})});
 var ZERO_ADV={}; ["ু","ূ","ৃ","্","ং","ঃ","ঁ"].forEach(function(c){ZERO_ADV[c]=true});
 var BASELINE=520, W=600, H=680, SCALE=1.35;
 
@@ -251,7 +268,7 @@ var projects=[], activeProject=0, uid=1;
 function newGlyphs(){ var g={}; ALL.forEach(function(o){g[o.ch]=[]}); g[" "]=[]; return g; }
 function makeProject(name){ return {id:uid++, name:name||"My Handwriting", glyphs:newGlyphs(), undo:{}, redo:{}}; }
 projects.push(makeProject("My Handwriting"));
-var currentChar="A", tool="pen", brush=14, drawing=false, curStroke=null, previewTimer=null, previewFontName="";
+var currentChar="A", currentLang="all", tool="pen", brush=14, drawing=false, curStroke=null, previewTimer=null, previewFontName="";
 
 function P(){return projects[activeProject]}
 function $(id){return document.getElementById(id)}
@@ -263,13 +280,14 @@ function setStatus(msg,cls){var b=$("statusBox");b.textContent=msg;b.className="
 function buildGrid(){
  var grid=$("glyphGrid"); grid.innerHTML="";
  SETS.forEach(function(set){
-   var h=document.createElement("div"); h.className="gsection"; h.textContent=set.label; grid.appendChild(h);
+   var wrap=document.createElement("div"); wrap.className="gset"; wrap.dataset.lang=set.lang||"en";
+   var h=document.createElement("div"); h.className="gsection"; h.textContent=set.label; wrap.appendChild(h);
    var row=document.createElement("div"); row.className="grow";
    set.chars.forEach(function(ch){
      var b=document.createElement("button"); b.className="glyph"; b.textContent=ch===" "?"␣":ch; b.dataset.ch=ch; b.setAttribute("aria-label","Draw letter "+ch);
      b.addEventListener("click",function(){selectChar(ch)}); row.appendChild(b);
    });
-   grid.appendChild(row);
+   wrap.appendChild(row); grid.appendChild(wrap);
  });
  refreshGrid();
 }
@@ -282,6 +300,19 @@ function refreshGrid(){
  $("progressLabel").textContent=done+" of "+ALL.length+" drawn";
  $("progressBar").style.width=Math.round(done/ALL.length*100)+"%";
 }
+/* ---------- language selector ---------- */
+function visibleChars(){ return currentLang==="all"?ALL:ALL.filter(function(o){return CHAR_LANG[o.ch]===currentLang}); }
+function applyLang(lang){
+ currentLang=lang;
+ document.querySelectorAll(".langbtn").forEach(function(b){b.classList.toggle("active",b.dataset.lang===lang)});
+ document.querySelectorAll(".gset").forEach(function(w){w.style.display=(lang==="all"||w.dataset.lang===lang)?"":"none"});
+ var notes={all:"Showing all letters — English and অসমীয়া.",en:"Showing English letters, numbers and symbols.",as:"Showing অসমীয়া letters — vowels, consonants, matras and digits."};
+ $("langNote").textContent=notes[lang]||notes.all;
+ var vis=visibleChars();
+ if(vis.length && !vis.some(function(o){return o.ch===currentChar})) selectChar(vis[0].ch);
+ refreshGrid();
+}
+document.querySelectorAll(".langbtn").forEach(function(b){b.addEventListener("click",function(){applyLang(b.dataset.lang)})});
 function buildProjectTabs(){
  var wrap=$("projectTabs"); wrap.innerHTML="";
  var tw=$("projectTabsWrap"); if(tw)tw.style.display=projects.length>1?"":"none";
@@ -344,10 +375,12 @@ $("penBtn").onclick=function(){setTool("pen")}; $("eraserBtn").onclick=function(
 document.querySelectorAll(".brush").forEach(function(b){b.addEventListener("click",function(){brush=+b.dataset.size; document.querySelectorAll(".brush").forEach(function(x){x.classList.toggle("active",x===b)}); setTool(tool)})});
 $("undoBtn").onclick=function(){var p=P(); p.undo[currentChar]=p.undo[currentChar]||[]; if(!p.undo[currentChar].length)return; p.redo[currentChar]=p.redo[currentChar]||[]; p.redo[currentChar].push(JSON.stringify(strokesOf(currentChar))); glyphs()[currentChar]=JSON.parse(p.undo[currentChar].pop()); redrawInk(); schedulePreview(400);};
 $("redoBtn").onclick=function(){var p=P(); p.redo[currentChar]=p.redo[currentChar]||[]; if(!p.redo[currentChar].length)return; p.undo[currentChar]=p.undo[currentChar]||[]; p.undo[currentChar].push(JSON.stringify(strokesOf(currentChar))); glyphs()[currentChar]=JSON.parse(p.redo[currentChar].pop()); redrawInk(); schedulePreview(400);};
-$("clearBtn").onclick=function(){ if(!strokesOf(currentChar).length)return; pushHistory(currentChar); glyphs()[currentChar]=[]; redrawInk(); schedulePreview(400); };
+function clearCurrentLetter(){ if(!strokesOf(currentChar).length){setStatus("This letter's board is already empty."); return;} pushHistory(currentChar); glyphs()[currentChar]=[]; redrawInk(); schedulePreview(400); setStatus("Cleared all strokes for \u201C"+currentChar+"\u201D \u2014 Undo brings them back.","ok"); }
+$("clearBtn").onclick=clearCurrentLetter;
+$("clearAllBtn").onclick=clearCurrentLetter;
 $("ghostToggle").onchange=function(){$("ghost").style.display=this.checked?"flex":"none"};
 $("guideToggle").onchange=drawGuides;
-function step(dir){var i=ALL.findIndex(function(o){return o.ch===currentChar}); i=(i+dir+ALL.length)%ALL.length; selectChar(ALL[i].ch)}
+function step(dir){var list=visibleChars(); if(!list.length)return; var i=list.findIndex(function(o){return o.ch===currentChar}); if(i<0)i=0; i=(i+dir+list.length)%list.length; selectChar(list[i].ch)}
 $("nextBtn").onclick=function(){step(1)}; $("prevBtn").onclick=function(){step(-1)};
 document.addEventListener("keydown",function(e){ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==="z"){e.preventDefault(); e.shiftKey?$("redoBtn").click():$("undoBtn").click();}});
 
@@ -542,7 +575,7 @@ $("loadJson").addEventListener("change",function(){
 });
 
 /* init */
-buildGrid(); buildProjectTabs(); drawGuides(); selectChar("A"); buildPreview();
+buildGrid(); buildProjectTabs(); drawGuides(); selectChar("A"); applyLang("all"); buildPreview();
 window.addEventListener("resize",drawGuides);
 })();
 </script>
